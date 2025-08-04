@@ -42,11 +42,7 @@ app.delete("/emaillogs/:id", async (req, res) => {
 
 // Send email route
 app.post("/sendemail", function (req, res) {
-  const { msg, subject, emailList, senderEmail } = req.body;
-
-    if (senderEmail !== "karthigaparthiban17@gmail.com") {
-    return res.status(403).send({ error: "Unauthorized: Email not allowed to send." });
-  }
+  const { msg, subject, emailList} = req.body;
   credential.find().then(function (data) {
     const transporter = nodemailer.createTransport({
       service: "gmail",
