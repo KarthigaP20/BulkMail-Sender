@@ -7,7 +7,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f9f9ff] text-gray-800">
-      <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center">
+      <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center sticky top-0 z-50">
         <h1 className="text-xl font-bold text-blue-600">Email Dashboard</h1>
         <div className="space-x-4">
           <button

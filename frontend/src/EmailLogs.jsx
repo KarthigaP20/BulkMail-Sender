@@ -35,7 +35,7 @@ const EmailLogs = () => {
 
   const formatDate = (dateString) => {
     const d = new Date(dateString);
-    return d.toLocaleString("en-GB"); // DD/MM/YYYY, HH:MM:SS
+    return d.toLocaleString("en-GB");
   };
 
   const getStatus = (successList, failedList) => {

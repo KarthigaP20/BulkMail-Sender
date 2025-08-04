@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 const app = express();
 
 app.use(cors({
-  origin: "https://bulk-mail-sender-five.vercel.app", 
+  origin: "https://bulk-mail-sender-five.vercel.app",
   methods: ["GET", "POST", "DELETE"],
   credentials: true
 }));
@@ -31,7 +31,6 @@ const emailRecordSchema = new mongoose.Schema({
 
 const EmailRecord = mongoose.model("EmailRecord", emailRecordSchema, "emailrecords");
 
-// ✅ Correctly placed DELETE route
 app.delete("/emaillogs/:id", async (req, res) => {
   try {
     await EmailRecord.findByIdAndDelete(req.params.id);
@@ -41,7 +40,7 @@ app.delete("/emaillogs/:id", async (req, res) => {
   }
 });
 
-// ✅ Send email route
+// Send email route
 app.post("/sendemail", function (req, res) {
   const { msg, subject, emailList } = req.body;
 
@@ -90,7 +89,7 @@ app.post("/sendemail", function (req, res) {
       });
 
       await record.save();
-      res.send({ success: true, failed }); 
+      res.send({ success: true, failed });
     };
 
     sendAllEmails();
@@ -100,7 +99,7 @@ app.post("/sendemail", function (req, res) {
   });
 });
 
-// ✅ Get logs (sorted newest first)
+// Get logs (sorted newest first)
 app.get("/emaillogs", async (req, res) => {
   try {
     const logs = await EmailRecord.find().sort({ sentAt: -1 });
