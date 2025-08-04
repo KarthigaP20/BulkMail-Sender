@@ -7,7 +7,7 @@ const EmailLogs = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/emaillogs")
+      .get("https://bulkmail-sender.onrender.com/emaillogs")
       .then((res) => {
         setLogs(res.data || []);
         setLoading(false);
