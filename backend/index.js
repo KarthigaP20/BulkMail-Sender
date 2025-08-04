@@ -42,6 +42,15 @@ app.post("/sendemail", function (req, res) {
       },
     });
 
+    app.delete("/emaillogs/:id", async (req, res) => {
+  try {
+    const result = await EmailLog.findByIdAndDelete(req.params.id);
+    if (!result) return res.status(404).json({ error: "Log not found" });
+    res.json({ message: "Deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
     const sent = [];
     const failed = [];
 

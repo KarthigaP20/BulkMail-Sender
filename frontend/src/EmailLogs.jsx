@@ -6,17 +6,36 @@ const EmailLogs = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    fetchLogs();
+  }, []);
+
+  const fetchLogs = () => {
     axios
       .get("https://bulkmail-sender.onrender.com/emaillogs")
       .then((res) => {
-        setLogs(res.data || []);
+        const fetchedLogs = res.data || [];
+        const sortedLogs = [...fetchedLogs].reverse(); // 🆕 newest on top
+        setLogs(sortedLogs);
         setLoading(false);
       })
       .catch((err) => {
         console.error("Error fetching email logs:", err);
         setLoading(false);
       });
-  }, []);
+  };
+
+  const deleteLog = (id) => {
+    if (!window.confirm("Are you sure you want to delete this log?")) return;
+    axios
+      .delete(`https://bulkmail-sender.onrender.com/emaillogs/${id}`)
+      .then(() => {
+        setLogs((prev) => prev.filter((log) => log._id !== id));
+      })
+      .catch((err) => {
+        console.error("Error deleting log:", err);
+        alert("Failed to delete log.");
+      });
+  };
 
   const formatDate = (dateString) => {
     const d = new Date(dateString);
@@ -38,16 +57,22 @@ const EmailLogs = () => {
         <p className="text-center text-gray-600">No email logs found.</p>
       ) : (
         <div className="space-y-8">
-          {[...logs].reverse().map((log, index) => {
+          {logs.map((log, index) => {
             const successList = (log.success || "").split(",").map(s => s.trim()).filter(s => s);
             const failedList = (log.failed || "").split(",").map(f => f.trim()).filter(f => f);
             const status = getStatus(successList, failedList);
 
             return (
               <div
-                key={index}
-                className="bg-gray-50 p-5 rounded-lg shadow border text-sm sm:text-base"
+                key={log._id || index}
+                className="bg-gray-50 p-5 rounded-lg shadow border text-sm sm:text-base relative"
               >
+                <button
+                  onClick={() => deleteLog(log._id)}
+                  className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded"
+                >
+                  Delete
+                </button>
                 <p><span className="font-semibold">Sent At:</span> {formatDate(log.sentAt)}</p>
                 <p><span className="font-semibold">Subject:</span> {log.subject}</p>
                 <p><span className="font-semibold">Message:</span> {log.body}</p>
