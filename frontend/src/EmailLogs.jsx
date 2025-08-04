@@ -38,7 +38,7 @@ const EmailLogs = () => {
         <p className="text-center text-gray-600">No email logs found.</p>
       ) : (
         <div className="space-y-8">
-          {logs.map((log, index) => {
+          {[...logs].reverse().map((log, index) => {
             const successList = (log.success || "").split(",").map(s => s.trim()).filter(s => s);
             const failedList = (log.failed || "").split(",").map(f => f.trim()).filter(f => f);
             const status = getStatus(successList, failedList);
