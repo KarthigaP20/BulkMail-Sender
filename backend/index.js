@@ -4,14 +4,15 @@ const nodemailer = require("nodemailer");
 const mongoose = require("mongoose");
 
 const app = express();
-// app.use(cors());
+
 app.use(cors({
   origin: "https://bulk-mail-sender-five.vercel.app", 
-  methods: ["GET", "POST"],
+  methods: ["GET", "POST", "DELETE"],
   credentials: true
 }));
 app.use(express.json());
 
+// MongoDB connection
 mongoose.connect("mongodb+srv://karthigaparthiban17:karthiga21@cluster0.g4juucu.mongodb.net/passkey?retryWrites=true&w=majority&appName=Cluster0")
   .then(() => console.log("Connected to DB"))
   .catch(() => console.log("Failed to connect DB"));
@@ -25,11 +26,22 @@ const emailRecordSchema = new mongoose.Schema({
   success: String,
   failed: String,
   status: String,
-  sentAt: { type: String }
+  sentAt: { type: Date, default: Date.now }
 });
 
 const EmailRecord = mongoose.model("EmailRecord", emailRecordSchema, "emailrecords");
 
+// ✅ Correctly placed DELETE route
+app.delete("/emaillogs/:id", async (req, res) => {
+  try {
+    await EmailRecord.findByIdAndDelete(req.params.id);
+    res.status(200).send("Deleted");
+  } catch (err) {
+    res.status(500).send("Error deleting log");
+  }
+});
+
+// ✅ Send email route
 app.post("/sendemail", function (req, res) {
   const { msg, subject, emailList } = req.body;
 
@@ -42,15 +54,6 @@ app.post("/sendemail", function (req, res) {
       },
     });
 
-    app.delete("/emaillogs/:id", async (req, res) => {
-  try {
-    const result = await EmailLog.findByIdAndDelete(req.params.id);
-    if (!result) return res.status(404).json({ error: "Log not found" });
-    res.json({ message: "Deleted successfully" });
-  } catch (err) {
-    res.status(500).json({ error: "Server error" });
-  }
-});
     const sent = [];
     const failed = [];
 
@@ -83,13 +86,10 @@ app.post("/sendemail", function (req, res) {
               ? "Partial Success"
               : "Failed"
             : "Success",
-        sentAt: new Date().toLocaleString("en-IN", {
-          timeZone: "Asia/Kolkata"
-        })
+        sentAt: new Date()
       });
 
       await record.save();
-
       res.send({ success: true, failed }); 
     };
 
@@ -100,11 +100,10 @@ app.post("/sendemail", function (req, res) {
   });
 });
 
-const emailRecordModel = mongoose.models.emailrecords || mongoose.model("emailrecords", new mongoose.Schema({}, { strict: false }));
-
+// ✅ Get logs (sorted newest first)
 app.get("/emaillogs", async (req, res) => {
   try {
-    const logs = await emailRecordModel.find().sort({ sentAt: -1 });
+    const logs = await EmailRecord.find().sort({ sentAt: -1 });
     res.status(200).json(logs);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch email logs" });

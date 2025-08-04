@@ -13,9 +13,8 @@ const EmailLogs = () => {
     axios
       .get("https://bulkmail-sender.onrender.com/emaillogs")
       .then((res) => {
-        const fetchedLogs = res.data || [];
-        const sortedLogs = [...fetchedLogs].reverse(); // 🆕 newest on top
-        setLogs(sortedLogs);
+        const reversed = (res.data || []).reverse(); // Newest first
+        setLogs(reversed);
         setLoading(false);
       })
       .catch((err) => {
@@ -24,22 +23,25 @@ const EmailLogs = () => {
       });
   };
 
-  const deleteLog = (id) => {
+  // ✅ Optional: Allow refresh after sending mail
+  const addNewLog = (newLog) => {
+    setLogs((prevLogs) => [newLog, ...prevLogs]); // Add to top
+  };
+
+  const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this log?")) return;
-    axios
-      .delete(`https://bulkmail-sender.onrender.com/emaillogs/${id}`)
-      .then(() => {
-        setLogs((prev) => prev.filter((log) => log._id !== id));
-      })
-      .catch((err) => {
-        console.error("Error deleting log:", err);
-        alert("Failed to delete log.");
-      });
+
+    try {
+      await axios.delete(`https://bulkmail-sender.onrender.com/emaillogs/${id}`);
+      setLogs((prevLogs) => prevLogs.filter((log) => log._id !== id)); // ✅ Update state correctly
+    } catch (err) {
+      console.error("Error deleting log:", err);
+    }
   };
 
   const formatDate = (dateString) => {
     const d = new Date(dateString);
-    return d.toLocaleString("en-GB"); // DD/MM/YYYY, HH:MM:SS
+    return d.toLocaleString("en-GB");
   };
 
   const getStatus = (successList, failedList) => {
@@ -57,22 +59,23 @@ const EmailLogs = () => {
         <p className="text-center text-gray-600">No email logs found.</p>
       ) : (
         <div className="space-y-8">
-          {logs.map((log, index) => {
+          {logs.map((log) => {
             const successList = (log.success || "").split(",").map(s => s.trim()).filter(s => s);
             const failedList = (log.failed || "").split(",").map(f => f.trim()).filter(f => f);
             const status = getStatus(successList, failedList);
 
             return (
               <div
-                key={log._id || index}
+                key={log._id}
                 className="bg-gray-50 p-5 rounded-lg shadow border text-sm sm:text-base relative"
               >
                 <button
-                  onClick={() => deleteLog(log._id)}
-                  className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded"
+                  onClick={() => handleDelete(log._id)}
+                  className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-sm"
                 >
-                  Delete
+                  Delete ✖
                 </button>
+
                 <p><span className="font-semibold">Sent At:</span> {formatDate(log.sentAt)}</p>
                 <p><span className="font-semibold">Subject:</span> {log.subject}</p>
                 <p><span className="font-semibold">Message:</span> {log.body}</p>
