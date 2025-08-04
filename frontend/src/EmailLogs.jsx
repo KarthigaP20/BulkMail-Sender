@@ -6,37 +6,21 @@ const EmailLogs = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchLogs();
-  }, []);
-
-  const fetchLogs = () => {
     axios
       .get("https://bulkmail-sender.onrender.com/emaillogs")
       .then((res) => {
-        const reversed = (res.data || []).reverse(); // Reverse to show newest first
-        setLogs(sorted);
+        setLogs(res.data || []);
         setLoading(false);
       })
       .catch((err) => {
         console.error("Error fetching email logs:", err);
         setLoading(false);
       });
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this log?")) return;
-
-    try {
-      await axios.delete(`https://bulkmail-sender.onrender.com/emaillogs/${id}`);
-      setLogs(logs.filter((log) => log._id !== id));
-    } catch (err) {
-      console.error("Error deleting log:", err);
-    }
-  };
+  }, []);
 
   const formatDate = (dateString) => {
     const d = new Date(dateString);
-    return d.toLocaleString("en-GB");
+    return d.toLocaleString("en-GB"); // DD/MM/YYYY, HH:MM:SS
   };
 
   const getStatus = (successList, failedList) => {
@@ -54,23 +38,16 @@ const EmailLogs = () => {
         <p className="text-center text-gray-600">No email logs found.</p>
       ) : (
         <div className="space-y-8">
-          {logs.map((log) => {
+          {logs.map((log, index) => {
             const successList = (log.success || "").split(",").map(s => s.trim()).filter(s => s);
             const failedList = (log.failed || "").split(",").map(f => f.trim()).filter(f => f);
             const status = getStatus(successList, failedList);
 
             return (
               <div
-                key={log._id}
-                className="bg-gray-50 p-5 rounded-lg shadow border text-sm sm:text-base relative"
+                key={index}
+                className="bg-gray-50 p-5 rounded-lg shadow border text-sm sm:text-base"
               >
-                <button
-                  onClick={() => handleDelete(log._id)}
-                  className="absolute top-2 right-2 text-red-500 hover:text-red-700 text-sm"
-                >
-                  Delete ✖
-                </button>
-
                 <p><span className="font-semibold">Sent At:</span> {formatDate(log.sentAt)}</p>
                 <p><span className="font-semibold">Subject:</span> {log.subject}</p>
                 <p><span className="font-semibold">Message:</span> {log.body}</p>
