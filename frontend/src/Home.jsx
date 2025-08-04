@@ -10,7 +10,7 @@ const Home = () => {
   const [emailLogs, setEmailLogs] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/emaillogs')
+    axios.get('https://bulkmail-sender.onrender.com/emaillogs')
       .then((res) => {
         setEmailLogs(res.data);
       })
@@ -54,7 +54,7 @@ const Home = () => {
 
     setstatus(true);
 
-    axios.post('http://localhost:5000/sendemail', {
+    axios.post('https://bulkmail-sender.onrender.com/sendemail', {
       msg,
       subject,
       emailList,
