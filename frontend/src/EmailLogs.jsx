@@ -13,8 +13,8 @@ const EmailLogs = () => {
     axios
       .get("https://bulkmail-sender.onrender.com/emaillogs")
       .then((res) => {
-        const reversed = (res.data || []).reverse(); // Newest first
-        setLogs(reversed);
+        const reversed = (res.data || []).reverse(); // Reverse to show newest first
+        setLogs(sorted);
         setLoading(false);
       })
       .catch((err) => {
@@ -23,17 +23,12 @@ const EmailLogs = () => {
       });
   };
 
-  // ✅ Optional: Allow refresh after sending mail
-  const addNewLog = (newLog) => {
-    setLogs((prevLogs) => [newLog, ...prevLogs]); // Add to top
-  };
-
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this log?")) return;
 
     try {
       await axios.delete(`https://bulkmail-sender.onrender.com/emaillogs/${id}`);
-      setLogs((prevLogs) => prevLogs.filter((log) => log._id !== id)); // ✅ Update state correctly
+      setLogs(logs.filter((log) => log._id !== id));
     } catch (err) {
       console.error("Error deleting log:", err);
     }
